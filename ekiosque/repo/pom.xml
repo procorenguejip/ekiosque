@@ -1,0 +1,141 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.ekiosque</groupId>
+    <artifactId>ekiosque</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>repo</artifactId>
+  <name>repo</name>
+  
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jdbc.url.root>jdbc:mysql://localhost:3306/</jdbc.url.root>
+    <jdbc.username.root>root</jdbc.username.root>
+    <jdbc.password.root>1qaz2wsx</jdbc.password.root>
+    <jdbc.url>jdbc:mysql://localhost:3306/</jdbc.url>
+    <jdbc.username>root</jdbc.username>
+    <jdbc.password>1qaz2wsx</jdbc.password>
+    <database.type>mysql</database.type>
+  </properties>
+  <build>
+  	<finalName>repo</finalName>
+  	<plugins>
+  		<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>sql-maven-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>mysql</groupId>
+						<artifactId>mysql-connector-java</artifactId>
+						<version>5.1.9</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<driver>com.mysql.jdbc.Driver</driver>
+					<url>${jdbc.url}</url>
+					<username>${jdbc.username}</username>
+					<password>${jdbc.password}</password>
+				</configuration>
+				<executions>
+					<execution>
+						<id>drop-db</id>
+						<phase>package</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<!-- need another database to drop the targeted one -->
+							<skip>${skip-setup-mysql}</skip>
+							<url>${jdbc.url.root}</url>
+							<username>${jdbc.username.root}</username>
+							<password>${jdbc.password.root}</password>
+							<autocommit>true</autocommit>
+							<srcFiles>
+								<srcFile>src/main/resources/sql/mysql/drop-database-ekiosque.sql</srcFile>
+							</srcFiles>
+							<!-- ignore error when database is not avaiable -->
+							<onError>continue</onError>
+						</configuration>
+					</execution>
+					<execution>
+						<id>create-db</id>
+						<phase>package</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<!-- need another database to create the targeted one -->
+							<skip>${skip-setup-mysql}</skip>
+							<url>${jdbc.url.root}</url>
+							<username>${jdbc.username.root}</username>
+							<password>${jdbc.password.root}</password>
+							<autocommit>true</autocommit>
+							<srcFiles>
+								<srcFile>src/main/resources/sql/mysql/create-database-ekiosque.sql</srcFile>
+							</srcFiles>
+							<!-- ignore error when database is not avaiable -->
+							<onError>continue</onError>
+						</configuration>
+					</execution>
+					<execution>
+						<id>grant-privileges</id>
+						<phase>package</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<!-- need another database to create the targeted one -->
+							<skip>${skip-setup-mysql}</skip>
+							<url>${jdbc.url.root}</url>
+							<username>${jdbc.username.root}</username>
+							<password>${jdbc.password.root}</password>
+							<autocommit>true</autocommit>
+							<sqlCommand>
+							GRANT ALL PRIVILEGES ON opentailor.* TO '${jdbc.username}'@'localhost' IDENTIFIED BY '${jdbc.password}' WITH GRANT OPTION;
+							GRANT ALL PRIVILEGES ON opentailor.* TO '${jdbc.username}'@'%' IDENTIFIED BY '${jdbc.password}' WITH GRANT OPTION;
+							FLUSH PRIVILEGES;
+							</sqlCommand>
+							<!-- ignore error when database is not avaiable -->
+							<onError>continue</onError>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>init-db</id>
+						<phase>package</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<skip>${skip-setup-mysql}</skip>
+							<autocommit>true</autocommit>
+							<srcFiles>
+								<srcFile>src/main/resources/sql/${database.type}/ekiosque-schema.sql</srcFile>
+							</srcFiles>
+							<!-- ignore error when database is not avaiable -->
+							<onError>continue</onError>
+						</configuration>
+					</execution>
+					<!-- <execution>
+						<id>init-demo-db</id>
+						<phase>install</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<skip>${skip-setup-mysql}</skip>
+							<autocommit>true</autocommit>
+							<srcFiles>
+								<srcFile>src/main/resources/sql/${database.type}/init-demo-values-coffee.sql</srcFile>
+							</srcFiles>
+							ignore error when database is not avaiable
+							<onError>continue</onError>
+						</configuration>
+					</execution> -->
+				</executions>
+			</plugin>
+  	</plugins>
+  </build>
+  
+</project>
